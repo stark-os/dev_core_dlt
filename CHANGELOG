@@ -1,0 +1,13 @@
+CURRENT STATE:
+    BUGS: .
+    NOTES: .
+
+
+
+
+
+
+---------------- BEFORE INTEGRATION INTO STARK OS ----------------
+
+29/10/2025 > [0.1.0]:
+- Created dlt.c/.h but only new/free() for the moment.

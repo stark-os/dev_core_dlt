@@ -1,0 +1,321 @@
+// ---------------- DEFINITIONS ----------------
+
+//method selection (uncomment to include)
+//#define DLT__UNSAFE_ACCESS_ALLOWED
+
+//csts
+#define DLT__BCH_PER_LVL  4 //nbr of refs to be stored in each lvl chk
+#define DLT__ITM_PER_CHK 16
+
+//safe memory access: comment for more performance
+#define DLT__HEAP_SAFE
+
+//data structure
+typedef struct {
+	ulng len;
+	ulng itmSz;
+	ref  dat;
+} dlt;
+
+
+
+
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DYNAMIC LEVEL TABLES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                 Dynamic Level Tables by I.A.
+
+        These dlt objects does not really have an appropriate equivalent name
+    that could exactly define them. The principle is based on a dynamic tree
+    where the final items are tables (leaves).
+
+
+
+    LEVEL TABLES - GENERAL:
+
+        Before getting into the "dynamic" part of this, let's first explain
+    how Level Tables work: A level table (LT) aims to store a fixed amont of
+    items the same way as tables do. However, to avoid allocating too big
+    memory chunks in heap, the items in an LT are split into several smaller
+    tables.
+
+    RECALL: The main advantage of using smaller memory chunks is to be able
+            to re-use freed memory as much as possible (less waste + faster).
+
+        However, to keep track of each sub-table, we must have at least one
+    additionnal memory block holding their references. Now, when having a
+    large number of sub-tables, this reference array can itself become big,
+    making our optimization useless.
+
+        To fix this, level tables are organized in a tree structure. Each
+    sub-table containing the final data is referenced in a certain number of
+    fixed-size memory chunks, themselves referenced in other fixed-size
+    memory chunks and so on, until everything references fits in one element.
+
+        This architecture relies on lots of references, no always refering
+    the same kind of thing. The final sub-tables which contains the final
+    data are called "tables of lowest level (lvl 0). They are nothing more
+    than regular tables actually.
+
+        Then, the tables containing references to lvl0 tabs are called "level
+    table of level 1", and so on. This way, the main Level Table object is
+    holding the reference table of highest level, a unique one, and provides
+    access to every item stored by going through each level, down to the
+    desired item.
+
+
+
+    LEVEL TABLES - CUSTOMIZATIONS & OPTIMIZATIONS:
+
+        Level tables are very efficient in terms of memory usage but more
+    resource consuming in terms of CPU time because of memory access, and
+    also quite complex to implement. Moreover, there are many ways to make
+    level tables, depending on how much, how long, how dynamic you want to
+    make them, etc...
+
+        To get the maximum efficiency, I've first decided to reserve the
+    same amount of reference tables (non-final, which is non-zero lvl tabs).
+    This way, we maximize the amount of blocks of the same size in the heap,
+    so we maximize our chances to re-use them (other lvl tab or anything
+    else).
+
+        The number of references we will store per ref table is given in the
+    constant DLT__BCH_PER_LVL here. It then determines how many sub-tables
+    we can potentially have in the lower level. This means, whith only this
+    parameter set, we have a fixed maximum number of final sub-tables.
+
+        However, this does not tell you how many items we can store per each
+    final sub-table. The most obvious answer would be to use the same size
+    for final level tables as for reference tables so that we maximize the
+    occurences of blocks of the same size in memory, as we said previously.
+
+        Well, this is not always a good idea. The main objective of a level
+    table is to split big amount of data, into smaller blocks for better
+    re-use. However, if we do split regular tables in too many fragments, we
+    loose the main advantages of tables (small memory usage, fast access to
+    items, maximum locality), starting to look like linked lists.
+
+        Therefore, to keep maximum advantage of regular tables, we better
+    use large tables for storing data, and use less references in higher
+    level tables. Everything here is is about finding the right balance.
+    This is when the parameter DLT__ITM_PER_CHK goes in: it defines the
+    number of items we will store on final sub-tables (lvl0 only).
+
+        With these 2 parameters, we can then decide whether we are going
+    to split memory into big or sall chunks, using more or less reference
+    tables or not etc...
+
+
+
+    LEVEL TABLES - INDEXING:
+
+        The most complex part of level tables seems to be the indexing. How
+    can we compute the correct reference chain to access to a specific item
+    in all this ? Well, actually, this is not that complex if you see it in
+    a more abstract way.
+
+        We've seen in the previous sections that for more memory efficiency,
+    we will subdivide our levels in a fixed number of branches. Knowing that
+    and the fact that we have "len" elements stored in our level table, we
+    may not be able to know exactly where our target item is, but we know at
+    least in which branch of higher level it is.
+
+        In practice, we divide the given index in our global level table by
+    nbr_of_bch_per_lvl ** lvl, and we have the index in the highest ref table
+    in which to look for the targetted item.
+
+        Now that we know which ref is being used in the higest level, we no
+    longer need the rest of our lvl table anymore: we can consider operating
+    like in a complete different level table of lower level. We reduce our
+    scope. The only thing we will need to continue here is to know where in
+    this sub-lvltab our target item is.
+
+        This information is given in the remainder of our previous division.
+    This remainder is the actual index in the subtable of lower level. Then,
+    we can operate the same strategy to reduce again our scope to the lower
+    level again (divide by nbr_of_bch_per_lvl ** lvl with lvl decreasing).
+
+        As soon as we reach the level 0, the indexing can be directly made
+    inside the table as we host the data directly as in a regular table.
+    Here it is, now you know why we are using these names and referencing in
+    that order.
+
+
+
+    LEVEL TABLES - LAZYNESS:
+
+        A last thing that you must consider when managing level tables is
+    which strategy to use for allocating level tables of lower level. Here
+    as well, there are lots of different possibilities.
+
+        We can use a full lazy mode that will initialize the level table
+    with no ref table and only allocate them when needed.
+
+        Or we can use a hybrid alternative that will allocate every ref
+    table to potentially get access to everything from the start, but the
+    final tables (lvl0) will be initialized lazy.
+
+        Finally we can allocate everything at once on start, considering
+    you prefer have all at the same place for optimal locality.
+
+        In regular tables (=lvl0 tab), whether we allocate data or not is
+    binary: you decide to allocate a whole memory chunk or not, and that's
+    it. In level tables, because your data is split among several memory
+    chunks, you got an opportunity to save some chunks that are not being
+    used and only keep the essential.
+
+        Moreover, because the maximum number of items to be stored in a
+    level table is not user customizable, we might have huge waste of data
+    we would never use for sure if we decide to allocate everything, no
+    metter what we need.
+
+        In this implementation, I decided to use a full-lazyness strategy
+    for allocating each sub-table of any level The rules are simple: When
+    creating a lvl table, the dat field it refers to is set to null by
+    default (unallocated).
+
+        Then as soon as someone pushed something into it, if a null ref is
+    detected at a certain level, we replace the ref by an allocated chunk
+    and we set every ref to null (except the 1st one that will refer to
+    the lower level).
+
+
+
+    DYNAMIC LEVEL TABLES:
+
+        Now that we know how level tables are managed, it is time to look
+    a bit at dynamic level tables.
+
+
+
+    PROS & CONS:
+
+    Advantages among other common structures:
+        - No maximum length
+        - Does not require big allocation blocks => optimal memory re-use
+        - Can be initialized empty
+    Disadvantages among other common structures:
+        - Quickly spread memory usage among different places (locality issues)
+        - Uses more memory to store elements (dynamic chain chunks to be stored)
+        - Operates allocations at runtime when adding/removing elements.
+        - Can only add & remove items at the end of dlt (similar to a stack)
+
+
+
+    A WORD ON MEMORY MANAGEMENT WITH THIS COMMON STRUCTURE:
+
+        This program adds a bunch of functions to work with dlt objects containing
+    references of a specified size in heap. Every data is stored in heap and user
+    never has visibility over internal allocations & memory blocks.
+
+        Every interaction on a dynamic amount of memory involves copy from an
+    existing heap location to another. This way, user loose responsability of the
+    data engaged in any of these operations.
+
+    The only calls involving memory changes at user level are new/free() then.
+
+
+
+    Contact: https://github.com/iasebsil83
+
+    Let's Code !                                  By I.A..
+******************************************************************************************
+
+    LICENSE:
+
+    stark-os/dev/core/dlt
+    Copyright (C) 2025 Sebastien SILVANO
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library.
+
+    If not, see <https://www.gnu.org/licenses/>.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+
+
+
+
+
+// ---------------- BASICS ----------------
+
+//existence
+dlt* dlt__new(ulng itmSz){
+	if(itmSz == 0){ return null; }
+	dlt* res   = heap__new(sizeof(dlt));
+	res->len   = 0;
+	res->itmSz = itmSz;
+
+	//full lazy alloc
+	res->dat = null;
+	return res;
+}
+
+void dlt__free(dlt* sbj){
+	if(sbj->dat){ heap__free(sbj->dat); }
+	heap__free(sbj);
+}
+
+
+
+//unsafe indexing
+/*#ifndef DLT__UNSAFE_ACCESS_ALLOWED
+static
+#endif
+void dlt__unsafe_get(dlt* sbj, ulng idx, iref dst){
+}
+
+#ifndef DLT__UNSAFE_ACCESS_ALLOWED
+static
+#endif
+void dlt__unsafe_set(dlt* sbj, ulng idx, iref src){
+}
+
+
+
+//safe indexing
+void dlt__safe_get(dlt* sbj, ulng idx, iref dst){}
+
+void dlt__safe_set(dlt* sbj, ulng idx, iref src){}
+
+
+
+//last
+boo  dlt__isEmpty(dlt* sbj          ){}
+void dlt__last(   dlt* sbj, iref dst){}
+void dlt__rmLast( dlt* sbj          ){}
+void dlt__popLast(dlt* sbj, iref dst){}
+
+//push
+#ifndef DLT__UNSAFE_ACCESS_ALLOWED
+static
+#endif
+void dlt__unsafe_push(dlt* sbj, iref src){
+}
+
+void dlt__safe_push(dlt* sbj, iref src){
+}
+
+
+
+//actions as a whole
+void dlt__empty(dlt* sbj){
+}
+void dlt__overwrite(dlt* sbj, iref src){
+}
+void dlt__fullfill( dlt* src, iref src){
+}
+
+//actions between dlts
+dlt* dlt__copy(dlt* src){
+}*/
