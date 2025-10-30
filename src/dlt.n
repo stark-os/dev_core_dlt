@@ -251,13 +251,13 @@ typedef struct {
 
 //existence
 dlt* dlt__new(GUumax itmSz){
-	if(itmSz == 0){ return null; }
+	if(itmSz == 0){ return GEnull; }
 	dlt* res   = heap__new(sizeof(dlt));
 	res->len   = 0;
 	res->itmSz = itmSz;
 
 	//full lazy alloc
-	res->dat = null;
+	res->dat = GEnull;
 	return res;
 }
 
