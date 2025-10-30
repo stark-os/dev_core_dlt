@@ -291,10 +291,10 @@ void dlt__safe_set(dlt* sbj, GUumax idx, iref src){}
 
 
 //last
-boo  dlt__isEmpty(dlt* sbj          ){}
-void dlt__last(   dlt* sbj, iref dst){}
-void dlt__rmLast( dlt* sbj          ){}
-void dlt__popLast(dlt* sbj, iref dst){}
+GUboo dlt__isEmpty(dlt* sbj          ){}
+void  dlt__last(   dlt* sbj, iref dst){}
+void  dlt__rmLast( dlt* sbj          ){}
+void  dlt__popLast(dlt* sbj, iref dst){}
 
 //push
 #ifndef DLT__UNSAFE_ACCESS_ALLOWED
