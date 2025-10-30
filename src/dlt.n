@@ -12,9 +12,9 @@
 
 //data structure
 typedef struct {
-	ulng len;
-	ulng itmSz;
-	ref  dat;
+	GUulng len;
+	GUulng itmSz;
+	ref    dat;
 } dlt;
 
 
@@ -250,7 +250,7 @@ typedef struct {
 // ---------------- BASICS ----------------
 
 //existence
-dlt* dlt__new(ulng itmSz){
+dlt* dlt__new(GUulng itmSz){
 	if(itmSz == 0){ return null; }
 	dlt* res   = heap__new(sizeof(dlt));
 	res->len   = 0;
@@ -272,21 +272,21 @@ void dlt__free(dlt* sbj){
 /*#ifndef DLT__UNSAFE_ACCESS_ALLOWED
 static
 #endif
-void dlt__unsafe_get(dlt* sbj, ulng idx, iref dst){
+void dlt__unsafe_get(dlt* sbj, GUulng idx, iref dst){
 }
 
 #ifndef DLT__UNSAFE_ACCESS_ALLOWED
 static
 #endif
-void dlt__unsafe_set(dlt* sbj, ulng idx, iref src){
+void dlt__unsafe_set(dlt* sbj, GUulng idx, iref src){
 }
 
 
 
 //safe indexing
-void dlt__safe_get(dlt* sbj, ulng idx, iref dst){}
+void dlt__safe_get(dlt* sbj, GUulng idx, iref dst){}
 
-void dlt__safe_set(dlt* sbj, ulng idx, iref src){}
+void dlt__safe_set(dlt* sbj, GUulng idx, iref src){}
 
 
 
