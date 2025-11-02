@@ -16,6 +16,7 @@ typedef struct {
 	GUumax itmSz;
 	ref    dat;
 } dlt;
+typedef dlt* GUdlt;
 
 
 
@@ -250,9 +251,9 @@ typedef struct {
 // ---------------- BASICS ----------------
 
 //existence
-dlt* dlt__new(GUumax itmSz){
+GUdlt dlt__new(GUumax itmSz){
 	if(itmSz == 0){ return GEnull; }
-	dlt* res   = heap__new(sizeof(dlt));
+	GUdlt res  = heap__new(sizeof(dlt));
 	res->len   = 0;
 	res->itmSz = itmSz;
 
@@ -261,7 +262,7 @@ dlt* dlt__new(GUumax itmSz){
 	return res;
 }
 
-void dlt__free(dlt* sbj){
+void dlt__free(GUdlt sbj){
 	if(sbj->dat){ heap__free(sbj->dat); }
 	heap__free(sbj);
 }
@@ -272,50 +273,50 @@ void dlt__free(dlt* sbj){
 /*#ifndef DLT__UNSAFE_ACCESS_ALLOWED
 static
 #endif
-void dlt__unsafe_get(dlt* sbj, GUumax idx, iref dst){
+void GTGUdlt_Funsafe__get(GUdlt sbj, GUumax idx, iref dst){
 }
 
 #ifndef DLT__UNSAFE_ACCESS_ALLOWED
 static
 #endif
-void dlt__unsafe_set(dlt* sbj, GUumax idx, iref src){
+void GTGUdlt_Funsafe__set(GUdlt sbj, GUumax idx, iref src){
 }
 
 
 
 //safe indexing
-void dlt__safe_get(dlt* sbj, GUumax idx, iref dst){}
+void GTGUdlt_Fsafe__get(GUdlt sbj, GUumax idx, iref dst){}
 
-void dlt__safe_set(dlt* sbj, GUumax idx, iref src){}
+void GTGUdlt_Fsafe__set(GUdlt sbj, GUumax idx, iref src){}
 
 
 
 //last
-GUboo dlt__isEmpty(dlt* sbj          ){}
-void  dlt__last(   dlt* sbj, iref dst){}
-void  dlt__rmLast( dlt* sbj          ){}
-void  dlt__popLast(dlt* sbj, iref dst){}
+GUboo GTGUdlt_FisEmpty(GUdlt sbj          ){}
+void  GTGUdlt_Flast(   GUdlt sbj, iref dst){}
+void  GTGUdlt_FrmLast( GUdlt sbj          ){}
+void  GTGUdlt_FpopLast(GUdlt sbj, iref dst){}
 
 //push
 #ifndef DLT__UNSAFE_ACCESS_ALLOWED
 static
 #endif
-void dlt__unsafe_push(dlt* sbj, iref src){
+void GTGUdlt_Funsafe__push(GUdlt sbj, iref src){
 }
 
-void dlt__safe_push(dlt* sbj, iref src){
+void GTGUdlt_Fsafe__push(GUdlt sbj, iref src){
 }
 
 
 
 //actions as a whole
-void dlt__empty(dlt* sbj){
+void GTGUdlt_Fempty(GUdlt sbj){
 }
-void dlt__overwrite(dlt* sbj, iref src){
+void GTGUdlt_Foverwrite(GUdlt sbj, iref src){
 }
-void dlt__fullfill( dlt* src, iref src){
+void GTGUdlt_Ffullfill( GUdlt src, iref src){
 }
 
 //actions between dlts
-dlt* dlt__copy(dlt* src){
+void GTGUdlt_Fcopy(GUdlt src, GUdlt dst){
 }*/

@@ -1,0 +1,13 @@
+tGUdlt	p,1,ref
+
+#fGTGUdlt_Fsafe__get	void,GUdlt,GUumax,iref
+#fGTGUdlt_Fsafe__set	void,GUdlt,GUumax,iref
+#fGTGUdlt_FisEmpty		GUboo,GUdlt
+#fGTGUdlt_Flast			void,GUdlt,iref
+#fGTGUdlt_FrmLast		void,GUdlt
+#fGTGUdlt_FpopLast		void,GUdlt,iref
+#fGTGUdlt_Fsafe_push	void,GUdlt, iref
+#fGTGUdlt_Fempty		void,GUdlt
+#fGTGUdlt_Foverwrite	void,GUdlt,iref
+#fGTGUdlt_Ffullfill		void,GUdlt,iref
+#fGTGUdlt_Fcopy			void,GUdlt,GUdlt

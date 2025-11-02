@@ -1,0 +1,32 @@
+//#define DLT__UNSAFE_ACCESS_ALLOWED
+#define DLT__BCH_PER_LVL  4 //nbr of refs to be stored in each lvl chk
+#define DLT__ITM_PER_CHK 16
+#define DLT__HEAP_SAFE
+typedef struct {
+	GUumax len;
+	GUumax itmSz;
+	ref    dat;
+} dlt;
+typedef dlt* GUdlt;
+GUdlt dlt__new(GUumax itmSz);
+void dlt__free(GUdlt sbj);
+/*
+#ifdef DLT__UNSAFE_ACCESS_ALLOWED
+void GTGUdlt_Funsafe__get(GUdlt sbj, GUumax idx, iref dst);
+void GTGUdlt_Funsafe__set(GUdlt sbj, GUumax idx, iref src);
+#endif
+void GTGUdlt_Fsafe__get(GUdlt sbj, GUumax idx, iref dst);
+void GTGUdlt_Fsafe__set(GUdlt sbj, GUumax idx, iref src);
+GUboo GTGUdlt_FisEmpty(GUdlt sbj);
+void  GTGUdlt_Flast(GUdlt sbj, iref dst);
+void  GTGUdlt_FrmLast(GUdlt sbj);
+void  GTGUdlt_FpopLast(GUdlt sbj, iref dst);
+#ifdef DLT__UNSAFE_ACCESS_ALLOWED
+void GTGUdlt_Funsafe__push(GUdlt sbj, iref src);
+#endif
+void GTGUdlt_Fsafe__push(GUdlt sbj, iref src);
+void GTGUdlt_Fempty(GUdlt sbj);
+void GTGUdlt_Foverwrite(GUdlt sbj, iref src);
+void GTGUdlt_Ffullfill(GUdlt src, iref src);
+void GTGUdlt_Fcopy(GUdlt src, GUdlt dst);
+*/
