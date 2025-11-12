@@ -12,8 +12,8 @@
 
 //data structure
 typedef struct {
-	GUumax len;
-	GUumax itmSz;
+	GUsmax len;
+	GUsmax itmSz;
 	ref    dat;
 } dlt;
 typedef dlt* GUdlt;
@@ -251,7 +251,7 @@ typedef dlt* GUdlt;
 // ---------------- BASICS ----------------
 
 //existence
-GUdlt dlt__new(GUumax itmSz){
+GUdlt dlt__new(GUsmax itmSz){
 	if(itmSz == 0){ return GEnull; }
 	GUdlt res  = heap__new(sizeof(dlt));
 	res->len   = 0;
@@ -273,21 +273,21 @@ void dlt__free(GUdlt sbj){
 /*#ifndef DLT__UNSAFE_ACCESS_ALLOWED
 static
 #endif
-void GTGUdlt_Funsafe__get(GUdlt sbj, GUumax idx, iref dst){
+void GTGUdlt_Funsafe__get(GUdlt sbj, GUsmax idx, iref dst){
 }
 
 #ifndef DLT__UNSAFE_ACCESS_ALLOWED
 static
 #endif
-void GTGUdlt_Funsafe__set(GUdlt sbj, GUumax idx, iref src){
+void GTGUdlt_Funsafe__set(GUdlt sbj, GUsmax idx, iref src){
 }
 
 
 
 //safe indexing
-void GTGUdlt_Fsafe__get(GUdlt sbj, GUumax idx, iref dst){}
+void GTGUdlt_Fsafe__get(GUdlt sbj, GUsmax idx, iref dst){}
 
-void GTGUdlt_Fsafe__set(GUdlt sbj, GUumax idx, iref src){}
+void GTGUdlt_Fsafe__set(GUdlt sbj, GUsmax idx, iref src){}
 
 
 
