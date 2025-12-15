@@ -210,10 +210,8 @@ typedef dlt* GUdlt;
     never has visibility over internal allocations & memory blocks.
 
         Every interaction on a dynamic amount of memory involves copy from an
-    existing heap location to another. This way, user loose responsability of the
-    data engaged in any of these operations.
-
-    The only calls involving memory changes at user level are new/free() then.
+    reserved stack location to an existing heap chunk dedicated. User looses the
+    responsability of carrying dead or alive references.
 
 
 
@@ -224,7 +222,7 @@ typedef dlt* GUdlt;
 
     LICENSE:
 
-    stark-os/dev/core/dlt
+    stark-os/stk/zcore/dlt
     Copyright (C) 2025 Sebastien SILVANO
 
     This library is free software; you can redistribute it and/or
